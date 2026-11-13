@@ -249,7 +249,7 @@ def main() -> None:
       .sun-rays{{transform-origin:540px 600px}}
       .top-card{{position:absolute;top:80px;left:110px;right:110px;min-height:92px;padding:18px 30px;background:#fffdf4;border:5px solid #9f4b43;box-shadow:0 12px 0 #5b342c35;transform:rotate(-1.5deg);text-align:center;color:#963d3e;font:italic 700 36px/1.2 Georgia,serif}}
       .caption{{position:absolute;left:60px;right:60px;bottom:100px;min-height:150px;padding:28px 35px;background:#fffdf0;border:4px solid #8a5b3d;border-radius:24px;box-shadow:0 12px 0 #53372735;text-align:center;color:#35271f;font:700 36px/1.25 Arial,sans-serif}}
-      .character{{transform-box:fill-box;transform-origin:50% 85%;filter:drop-shadow(0 10px 8px #563d2b35)}.arm-left,.arm-right{{transform-box:fill-box;transform-origin:50% 15%}}
+      .character{{transform-box:fill-box;transform-origin:50% 85%;filter:drop-shadow(0 10px 8px #563d2b35)}}.arm-left,.arm-right{{transform-box:fill-box;transform-origin:50% 15%}}
       .prop{{transform-box:fill-box;transform-origin:50% 50%;filter:drop-shadow(0 9px 8px #4b332b30)}}
       .outro{{display:grid;place-items:center;background:radial-gradient(circle at 50% 42%,#ffe8a6,#dca65a 75%);opacity:0}}
       .outro-halo{{position:absolute;width:900px;height:900px;border-radius:50%;background:radial-gradient(circle,#fff9dc 0%,#f5d47f 45%,#e6b45e 70%,transparent 71%);opacity:.9}}
