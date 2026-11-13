@@ -47,7 +47,7 @@ def main() -> int:
     title = esc(data["title"])
     tradition = esc(data["tradition"])
     question = esc(data.get("closing_question", "What would you have done?"))
-    audio_src = "../" + audio_path.as_posix()
+    audio_src = "assets/" + audio_path.name
     html_doc = f'''<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <style>
