@@ -2,6 +2,13 @@ name: Daily mythology video draft
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/daily-video-draft.yml'
+      - 'story_engine/**'
+      - 'video_engine/**'
+      - 'requirements.txt'
   schedule:
     - cron: "30 13 * * *" # 19:00 IST
 
@@ -67,4 +74,3 @@ jobs:
             video/index.html
           if-no-files-found: error
           retention-days: 7
-      
