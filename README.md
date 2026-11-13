@@ -1,0 +1,1 @@
+# mythology-shorts-automation
