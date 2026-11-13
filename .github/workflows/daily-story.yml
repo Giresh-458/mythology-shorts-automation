@@ -1,23 +1,15 @@
-name: Daily story draft
+name: Daily story draft (manual test only)
 on:
   workflow_dispatch:
-  schedule:
-    # 19:00 India Standard Time (UTC+05:30)
-    - cron: "30 13 * * *"
 permissions:
   contents: read
-concurrency:
-  group: daily-story-draft
-  cancel-in-progress: false
 jobs:
   generate-story:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Check out repository
-        uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           cache: pip
