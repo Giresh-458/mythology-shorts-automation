@@ -1,0 +1,29 @@
+name: Validate video pipeline
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+    paths:
+      - "story_engine/**"
+      - "video_engine/**"
+      - "tests/**"
+      - ".github/workflows/ci.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Compile Python modules
+        run: python -m py_compile story_engine/generate_story.py video_engine/build_composition.py
+      - name: Run composition tests
+        run: python -m unittest discover -s tests -v
