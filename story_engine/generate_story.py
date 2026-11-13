@@ -15,7 +15,7 @@ from google.genai import types
 from google.genai import errors
 
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
-GROQ_MODEL = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
 OUT_DIR = Path("output/stories")
 
 
@@ -75,7 +75,7 @@ def validate(data: dict) -> None:
 def parse_and_validate(raw: str) -> dict:
     text = (raw or "").strip()
     if text.startswith("```"):
-        text = re.sub(r"^\`\`\`(?:json)?\s*|\s*\`\`\`$", "", text, flags=re.I)
+        text = re.sub(r"^```(?:json)?\s*|\s*```$", "", text, flags=re.I)
     data = json.loads(text)
     validate(data)
     return data
