@@ -1,0 +1,38 @@
+name: Daily story draft
+on:
+  workflow_dispatch:
+  schedule:
+    # 19:00 India Standard Time (UTC+05:30)
+    - cron: "30 13 * * *"
+permissions:
+  contents: read
+concurrency:
+  group: daily-story-draft
+  cancel-in-progress: false
+jobs:
+  generate-story:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Generate and validate story draft
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: gemini-2.5-flash
+        run: python story_engine/generate_story.py
+      - name: Upload story draft
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mythology-story-${{ github.run_number }}
+          path: output/stories/*.json
+          if-no-files-found: error
+          retention-days: 14
