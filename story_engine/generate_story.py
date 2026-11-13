@@ -124,7 +124,11 @@ def generate_groq(prompt: str) -> dict:
     request = urllib.request.Request(
         "https://api.groq.com/openai/v1/chat/completions",
         data=json.dumps(payload).encode("utf-8"),
-        headers={"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"},
+        headers={
+            "Authorization": f"Bearer {api_key}",
+            "Content-Type": "application/json",
+            "User-Agent": "mythology-shorts-automation/1.0",
+        },
         method="POST",
     )
     try:
