@@ -1,0 +1,70 @@
+name: Daily mythology video draft
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 13 * * *" # 19:00 IST
+
+permissions:
+  contents: read
+
+concurrency:
+  group: daily-mythology-video
+  cancel-in-progress: false
+
+jobs:
+  build-video:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install FFmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
+      - name: Install Python dependencies
+        run: pip install -r requirements.txt
+      - name: Generate and validate story
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_MODEL: gemini-2.5-flash
+        run: python story_engine/generate_story.py
+      - name: Prepare latest story path
+        run: |
+          mkdir -p output/stories
+          cp "$(ls -t output/stories/story-*.json | head -n 1)" output/stories/latest.json
+      - name: Generate English narration (Kokoro voice via HyperFrames CLI)
+        run: |
+          python -c "import json; d=json.load(open('output/stories/latest.json')); open('output/stories/narration.txt','w').write(d['narration'])"
+          npx --yes hyperframes tts output/stories/narration.txt --voice af_nova --output video/assets/narration.wav
+      - name: Build portrait composition
+        run: python video_engine/build_composition.py output/stories/latest.json video/assets/narration.wav
+      - name: Lint composition
+        working-directory: video
+        run: npx --yes hyperframes lint
+      - name: Render MP4
+        working-directory: video
+        run: npx --yes hyperframes render --output ../output/mythology-short.mp4 --fps 30 --quality draft
+      - name: Validate rendered file
+        run: |
+          test -s output/mythology-short.mp4
+          ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 output/mythology-short.mp4
+      - name: Upload draft video and source
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mythology-short-draft-${{ github.run_number }}
+          path: |
+            output/mythology-short.mp4
+            output/stories/latest.json
+            video/index.html
+          if-no-files-found: error
+          retention-days: 7
