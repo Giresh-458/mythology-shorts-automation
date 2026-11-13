@@ -47,6 +47,9 @@ Return JSON only:
  "visual_description":"specific illustrated 2D Indian puppet-theatre shot: named characters, setting, visible action, pose, costume and props",
  "characters":["explicit character names"],"setting":"specific place","action":"visible physical action",
  "narration_segment":"exact corresponding narration",
+ "emotion":"one of calm, happy, surprised, determined, sad, reverent",
+ "camera":"one of gentle_push, pan_left, pan_right, wide, close_up",
+ "props":["specific visible prop names; empty array if none"],
  "on_screen_text":"short caption"}],
  "closing_question":"audience engagement question"
 }
@@ -71,8 +74,17 @@ def validate(data: dict) -> None:
     duration = sum(s["duration_seconds"] for s in scenes)
     if not 30 <= duration <= 60:
         raise ValueError(f"Scene duration is {duration}s; expected 30–60s.")
-    if any(not all(k in s for k in ("narration_segment", "visual_description", "on_screen_text")) for s in scenes):
-        raise ValueError("Every scene needs narration_segment, visual_description and on_screen_text.")
+    scene_fields = ("narration_segment", "visual_description", "on_screen_text", "characters", "setting", "action", "emotion", "camera", "props")
+    if any(not all(k in s for k in scene_fields) for s in scenes):
+        raise ValueError(f"Every scene needs these production fields: {scene_fields}.")
+    allowed_emotions = {"calm", "happy", "surprised", "determined", "sad", "reverent"}
+    allowed_cameras = {"gentle_push", "pan_left", "pan_right", "wide", "close_up"}
+    if any(s["emotion"] not in allowed_emotions for s in scenes):
+        raise ValueError("Scene emotion must be one of the documented values.")
+    if any(s["camera"] not in allowed_cameras for s in scenes):
+        raise ValueError("Scene camera must be one of the documented values.")
+    if any(not isinstance(s["characters"], list) or not isinstance(s["props"], list) for s in scenes):
+        raise ValueError("Scene characters and props must be JSON arrays.")
     if any(len(str(s.get("visual_description", "")).split()) < 8 for s in scenes):
         raise ValueError("Every scene needs a concrete, drawable visual description.")
     combined = " ".join(s["narration_segment"].strip() for s in scenes).strip()
