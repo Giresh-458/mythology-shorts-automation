@@ -17,13 +17,42 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Install FFmpeg
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
       - name: Compile Python modules
         run: python -m py_compile story_engine/generate_story.py video_engine/build_composition.py
       - name: Run composition tests
         run: python -m unittest discover -s tests -v
+      - name: Create silent narration fixture
+        run: |
+          mkdir -p video/assets output
+          ffmpeg -hide_banner -loglevel error -f lavfi -i anullsrc=r=24000:cl=mono -t 36 -c:a pcm_s16le video/assets/narration.wav
+      - name: Build sample composition
+        run: python video_engine/build_composition.py tests/fixtures/sample_story.json video/assets/narration.wav
+      - name: Lint HyperFrames composition
+        working-directory: video
+        env:
+          HYPERFRAMES_NO_TELEMETRY: "1"
+        run: npx --yes hyperframes lint
+      - name: Render sample MP4
+        working-directory: video
+        env:
+          HYPERFRAMES_NO_TELEMETRY: "1"
+        run: npx --yes hyperframes render --output ../output/ci-preview.mp4 --fps 30 --quality standard
+      - name: Verify rendered sample
+        run: |
+          test -s output/ci-preview.mp4
+          ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 output/ci-preview.mp4 | grep -qx '1080x1920'
+          DURATION="$(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 output/ci-preview.mp4)"
+          python -c "import sys; d=float(sys.argv[1]); assert 30 <= d <= 60, f'Expected 30-60 seconds, got {d:.2f}'" "$DURATION"
