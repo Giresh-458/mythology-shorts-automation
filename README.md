@@ -29,7 +29,7 @@ If the key is missing or the API quota is exhausted, the workflow stops. There i
 ## Required GitHub secret
 
 - `GEMINI_API_KEY`: store only as a GitHub Actions secret. Never put it in source code, commits, screenshots, or chat.
-- `GROQ_API_KEY`: optional backup provider key, stored only as a GitHub Actions secret. If Gemini exhausts its retry policy, the script tries Groq. The backup only works if your Groq account has access to the configured model and available quota.
+- `GROQ_API_KEY`: optional backup provider key, stored only as a GitHub Actions secret. If Gemini exhausts its retry policy, the script tries Groq. The backup only works if your Groq account has access to the configured model (`openai/gpt-oss-120b`) and available quota.
 
 To enable Groq fallback, create a key at https://console.groq.com/keys and add a repository secret named `GROQ_API_KEY` under **Settings → Secrets and variables → Actions**. Do not paste the key into chat or commit it. The workflow never switches to a paid provider automatically; check your Groq plan and limits before use.
 
