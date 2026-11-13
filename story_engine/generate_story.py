@@ -4,11 +4,13 @@ import json
 import os
 import re
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 
 from google import genai
 from google.genai import types
+from google.genai import errors
 
 MODEL = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
 OUT_DIR = Path("output/stories")
@@ -65,20 +67,39 @@ def validate(data: dict) -> None:
         raise ValueError("Scene narration segments do not reconstruct narration.")
 
 
+def generate_with_retry(client):
+    # Retry only transient service/rate-limit failures; never hide auth/model errors.
+    transient_codes = {408, 429, 500, 502, 503, 504}
+    for attempt in range(5):
+        try:
+            return client.models.generate_content(
+                model=MODEL,
+                contents=build_prompt(),
+                config=types.GenerateContentConfig(
+                    response_mime_type="application/json",
+                    temperature=0.8,
+                ),
+            )
+        except errors.APIError as exc:
+            code = getattr(exc, "code", None)
+            if code not in transient_codes or attempt == 4:
+                raise
+            delay = min(60, 8 * (2 ** attempt))
+            print(f"Gemini temporary error HTTP {code}; retry {attempt + 1}/4 in {delay}s.", flush=True)
+            time.sleep(delay)
+
+
 def main() -> int:
     api_key = os.getenv("GEMINI_API_KEY")
     if not api_key:
         print("ERROR: Configure GEMINI_API_KEY in GitHub Actions secrets.", file=sys.stderr)
         return 2
     client = genai.Client(api_key=api_key)
-    response = client.models.generate_content(
-        model=MODEL,
-        contents=build_prompt(),
-        config=types.GenerateContentConfig(
-            response_mime_type="application/json",
-            temperature=0.8,
-        ),
-    )
+    try:
+        response = generate_with_retry(client)
+    except errors.APIError as exc:
+        print(f"ERROR: Gemini API request failed after retry policy: {exc}", file=sys.stderr)
+        return 4
     try:
         data = json.loads(response.text or "")
         validate(data)
