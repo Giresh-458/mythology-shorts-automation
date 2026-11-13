@@ -32,13 +32,20 @@ Requirements:
 - If details differ across traditions, do not present disputed details as universal.
 - Accurate hook, clear narrative, meaningful takeaway or curiosity question.
 - General audience; no graphic violence; no fabricated "secret facts".
+- Visual direction is critical: every scene must depict a DIFFERENT, specific moment from the narration.
+- Name every visible character explicitly (e.g. Hanuman, Rama, Sita, Ravana); never say only "a hero" or "a figure".
+- State the exact setting (ocean, Ashoka grove, palace, forest, mountain, battlefield, etc.) and a visible physical action/pose.
+- Include visual details that distinguish characters: clothing colours, crowns, jewellery, weapons/props, expressions and gestures.
+- Do not reuse the same pose, camera framing, or background in consecutive scenes.
+- Keep visual_description concise but concrete enough for an illustrator to draw; avoid abstract phrases such as "devotion shines" or "a powerful moment".
 Return JSON only:
 {
  "title":"short title","tradition":"source tradition or epic","episode":"episode name",
  "fact_note":"tradition-specific detail or uncertainty",
  "narration":"complete spoken script",
  "scenes":[{"scene_number":1,"duration_seconds":8,
- "visual_description":"2D Indian puppet-animation direction",
+ "visual_description":"specific illustrated 2D Indian puppet-theatre shot: named characters, setting, visible action, pose, costume and props",
+ "characters":["explicit character names"],"setting":"specific place","action":"visible physical action",
  "narration_segment":"exact corresponding narration",
  "on_screen_text":"short caption"}],
  "closing_question":"audience engagement question"
@@ -66,6 +73,8 @@ def validate(data: dict) -> None:
         raise ValueError(f"Scene duration is {duration}s; expected 30–60s.")
     if any(not all(k in s for k in ("narration_segment", "visual_description", "on_screen_text")) for s in scenes):
         raise ValueError("Every scene needs narration_segment, visual_description and on_screen_text.")
+    if any(len(str(s.get("visual_description", "")).split()) < 8 for s in scenes):
+        raise ValueError("Every scene needs a concrete, drawable visual description.")
     combined = " ".join(s["narration_segment"].strip() for s in scenes).strip()
     normalize = lambda value: re.sub(r"\s+", " ", value).strip()
     if normalize(combined) != normalize(data["narration"]):
