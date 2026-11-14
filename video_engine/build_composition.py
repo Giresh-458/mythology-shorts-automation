@@ -229,6 +229,7 @@ def main() -> None:
         prop_items = scene.get("props") or []
         prop_text = " ".join(str(item) for item in prop_items)
         prop = prop_svg(prop_text, 790 if len(names) == 1 else 540, 1110, .9) if prop_text.strip() else ""
+        camera = str(scene.get("camera") or "gentle_push").lower()
         camera_scale = 1.13 if camera == "close_up" else 0.94 if camera == "wide" else 1.035 if camera in ("gentle_push", "push_in", "zoom_in") else 1.0
         camera_x = -22 if camera == "pan_right" else 22 if camera == "pan_left" else 0
         action_text = action.lower()
@@ -245,7 +246,6 @@ def main() -> None:
         title = esc(scene.get("on_screen_text") or data.get("title", "An Indian Epic"))
         caption = esc(scene.get("narration_segment", ""))
         visual = esc(scene.get("visual_description", ""))
-        camera = str(scene.get("camera") or "gentle_push").lower()
         sid = f"scene-{i}"
         blocks.append(f'''<section class="clip scene" id="{sid}" data-start="{start:.3f}" data-duration="{duration:.3f}" data-track-index="0">
           <svg class="art" viewBox="0 0 {W} {H}" role="img" aria-label="{visual}">{background(kind, i)}<g class="stage">{prop}{figures}</g></svg>
