@@ -32,16 +32,17 @@ Requirements:
 - Visual direction is critical: every scene must depict a DIFFERENT, specific moment from the narration.
 - Name every visible character explicitly (e.g. Hanuman, Rama, Sita, Ravana); never say only "a hero" or "a figure".
 - State the exact setting (ocean, Ashoka grove, palace, forest, mountain, battlefield, etc.) and a visible physical action/pose.
+- Match the analysed reference: clean flat 2D vector cut-out animation, rounded geometric character silhouettes, large expressive eyes, simple readable mouth shapes, warm golden/cream palette, ornate palace/courtyard staging, foreground props and gentle camera movement.
 - Include visual details that distinguish characters: clothing colours, crowns, jewellery, weapons/props, expressions and gestures.
-- Do not reuse the same pose, camera framing, or background in consecutive scenes.
-- Keep visual_description concise but concrete enough for an illustrator to draw; avoid abstract phrases such as "devotion shines" or "a powerful moment".
+- Give each scene a distinct physical action and readable pose. Do not reuse the same pose, camera framing, or background in consecutive scenes.
+- Keep visual_description concise but concrete enough for a vector illustrator to draw; avoid abstract phrases such as "devotion shines" or "a powerful moment".
 Return JSON only:
 {
  "title":"short title","tradition":"source tradition or epic","episode":"episode name",
  "fact_note":"tradition-specific detail or uncertainty",
  "narration":"complete spoken script",
  "scenes":[{"scene_number":1,"duration_seconds":8,
- "visual_description":"specific illustrated 2D Indian puppet-theatre shot: named characters, setting, visible action, pose, costume and props",
+ "visual_description":"specific flat 2D vector cut-out animation frame: named characters, rounded geometric silhouettes, setting, visible action, pose, costume, expression and props",
  "characters":["explicit character names"],"setting":"specific place","action":"visible physical action",
  "narration_segment":"exact corresponding narration",
  "emotion":"one of calm, happy, surprised, determined, sad, reverent",
