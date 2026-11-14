@@ -80,6 +80,10 @@ class CompositionBuilderTests(unittest.TestCase):
         self.assertIn('window.__timelines["mythology-short"]', html)
         self.assertIn('class="caption"', html)
         self.assertIn('class="prop"', html)
+        self.assertIn('rotation:-2', html)
+        self.assertIn('rotation:-42', html)
+        self.assertIn('rotation:42', html)
+        self.assertIn('scale:0.94', html)
 
 
 if __name__ == "__main__":
