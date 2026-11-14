@@ -1,12 +1,10 @@
-"""Generate one original English mythology Short using Gemini, then Groq as fallback."""
+"""Generate one original English mythology Short with Gemini only; never switch providers."""
 from __future__ import annotations
 import json
 import os
 import re
 import sys
 import time
-import urllib.error
-import urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -15,7 +13,6 @@ from google.genai import types
 from google.genai import errors
 
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
-GROQ_MODEL = os.getenv("GROQ_MODEL", "openai/gpt-oss-120b")
 OUT_DIR = Path("output/stories")
 
 
@@ -128,76 +125,22 @@ def generate_gemini(prompt: str) -> dict:
             time.sleep(delay)
 
 
-def generate_groq(prompt: str) -> dict:
-    api_key = os.getenv("GROQ_API_KEY")
-    if not api_key:
-        raise RuntimeError("GROQ_API_KEY is not configured; cannot use Groq fallback.")
-    payload = {
-        "model": GROQ_MODEL,
-        "messages": [
-            {"role": "system", "content": "You write careful, source-respectful Indian mythology stories. Return only valid JSON matching the requested schema."},
-            {"role": "user", "content": prompt},
-        ],
-        "temperature": 0.7,
-        "max_tokens": 4000,
-        "response_format": {"type": "json_object"},
-    }
-    request = urllib.request.Request(
-        "https://api.groq.com/openai/v1/chat/completions",
-        data=json.dumps(payload).encode("utf-8"),
-        headers={
-            "Authorization": f"Bearer {api_key}",
-            "Content-Type": "application/json",
-            "User-Agent": "mythology-shorts-automation/1.0",
-        },
-        method="POST",
-    )
-    try:
-        with urllib.request.urlopen(request, timeout=90) as response:
-            result = json.loads(response.read().decode("utf-8"))
-    except urllib.error.HTTPError as exc:
-        detail = exc.read().decode("utf-8", errors="replace")[:1500]
-        raise RuntimeError(f"Groq API HTTP {exc.code}: {detail}") from exc
-    choices = result.get("choices") or []
-    if not choices:
-        raise RuntimeError("Groq returned no completion choices.")
-    return parse_and_validate(choices[0].get("message", {}).get("content", ""))
-
-
 def main() -> int:
-    prompt = build_prompt()
-    data = None
-    provider = None
-    gemini_error = None
-    if os.getenv("GEMINI_API_KEY"):
-        try:
-            print(f"Generating story with Gemini ({GEMINI_MODEL})...", flush=True)
-            data = generate_gemini(prompt)
-            provider = "Gemini"
-        except Exception as exc:
-            gemini_error = exc
-            print(f"Gemini failed: {exc}. Trying Groq fallback...", file=sys.stderr, flush=True)
-    else:
-        gemini_error = RuntimeError("GEMINI_API_KEY is not configured.")
-        print("Gemini key absent; trying Groq fallback.", flush=True)
-
-    if data is None:
-        if not os.getenv("GROQ_API_KEY"):
-            print(f"ERROR: No story provider succeeded. Gemini: {gemini_error}. Add GROQ_API_KEY to GitHub Actions secrets to enable fallback.", file=sys.stderr)
-            return 4
-        try:
-            print(f"Generating story with Groq ({GROQ_MODEL})...", flush=True)
-            data = generate_groq(prompt)
-            provider = "Groq"
-        except Exception as exc:
-            print(f"ERROR: Groq fallback also failed: {exc}", file=sys.stderr)
-            return 5
+    if not os.getenv("GEMINI_API_KEY"):
+        print("ERROR: GEMINI_API_KEY is not configured. No provider fallback is enabled.", file=sys.stderr)
+        return 4
+    try:
+        print(f"Generating story with Gemini ({GEMINI_MODEL})...", flush=True)
+        data = generate_gemini(build_prompt())
+    except Exception as exc:
+        print(f"ERROR: Gemini story generation failed: {exc}", file=sys.stderr, flush=True)
+        return 5
 
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     path = OUT_DIR / f"story-{datetime.now(timezone.utc):%Y%m%d}.json"
-    path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\\n", encoding="utf-8")
     print(f"Validated story draft saved: {path}")
-    print(f"Provider: {provider}; title: {data['title']}; scenes: {len(data['scenes'])}")
+    print(f"Provider: Gemini; title: {data['title']}; scenes: {len(data['scenes'])}")
     return 0
 
 
