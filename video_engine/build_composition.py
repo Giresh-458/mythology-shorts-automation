@@ -49,6 +49,19 @@ def scene_text(scene: dict) -> str:
     )).lower()
 
 def setting_for(scene: dict) -> str:
+    explicit = str(scene.get("setting", "")).lower()
+    for words, kind in (
+        (("ocean", "sea", "shore"), "ocean"),
+        (("palace", "court", "hall", "kingdom", "throne", "lanka"), "palace"),
+        (("yagna", "yajna", "fire altar", "homam", "courtyard"), "courtyard"),
+        (("garden", "ashoka", "grove"), "garden"),
+        (("mountain", "hill", "peak", "cliff"), "mountain"),
+        (("battle", "war", "army"), "battle"),
+        (("forest", "jungle", "hermitage"), "forest"),
+        (("sky", "cloud", "heaven"), "sky"),
+    ):
+        if any(word in explicit for word in words):
+            return kind
     text = scene_text(scene)
     for words, kind in (
         (("ocean", "sea", "wave", "water"), "ocean"),
@@ -213,8 +226,22 @@ def main() -> None:
         positions = [(380, 1430, 1.0), (730, 1460, .78), (540, 1190, .68)]
         figures = "".join(puppet(name, *positions[j], i * 10 + j, emotion, action) for j, name in enumerate(names))
         # Use the scene's actual setting/action/props to select a visible story prop.
-        prop_text = " ".join(str(scene.get(k, "")) for k in ("props", "action", "visual_description", "narration_segment"))
-        prop = prop_svg(prop_text, 790 if len(names) == 1 else 540, 1110, .9)
+        prop_items = scene.get("props") or []
+        prop_text = " ".join(str(item) for item in prop_items)
+        prop = prop_svg(prop_text, 790 if len(names) == 1 else 540, 1110, .9) if prop_text.strip() else ""
+        camera_scale = 1.13 if camera == "close_up" else 0.94 if camera == "wide" else 1.035 if camera in ("gentle_push", "push_in", "zoom_in") else 1.0
+        camera_x = -22 if camera == "pan_right" else 22 if camera == "pan_left" else 0
+        action_text = action.lower()
+        if any(word in action_text for word in ("leap", "jump", "fly", "soar")):
+            arm_left, arm_right, leg_rotation, body_tilt = -42, 42, 18, -7
+        elif any(word in action_text for word in ("pray", "fold", "namaste", "bow")):
+            arm_left, arm_right, leg_rotation, body_tilt = 18, -18, 0, 0
+        elif any(word in action_text for word in ("point", "offer", "show", "gesture")):
+            arm_left, arm_right, leg_rotation, body_tilt = 8, -38, 0, 0
+        elif any(word in action_text for word in ("fight", "strike", "attack", "defend")):
+            arm_left, arm_right, leg_rotation, body_tilt = -28, 48, 12, -5
+        else:
+            arm_left, arm_right, leg_rotation, body_tilt = -8, 8, 0, 0
         title = esc(scene.get("on_screen_text") or data.get("title", "An Indian Epic"))
         caption = esc(scene.get("narration_segment", ""))
         visual = esc(scene.get("visual_description", ""))
@@ -229,10 +256,13 @@ def main() -> None:
           const stage{i}=scene{i}.querySelector(".stage");
           const chars{i}=scene{i}.querySelectorAll(".character");
           tl.fromTo(scene{i},{{opacity:0}},{{opacity:1,duration:0.22,ease:"none"}},{start});
-          tl.fromTo(stage{i},{{scale:{1.035 if camera in ("gentle_push","push_in","zoom_in") else 1.0},x:{-18 if camera=="pan_right" else 18 if camera=="pan_left" else 0}}},{{scale:1,x:0,duration:{max(0.7, duration-0.2):.3f},ease:"power1.out"}},{start});
+          tl.fromTo(stage{i},{{scale:{camera_scale},x:{camera_x}}},{{scale:1,x:0,duration:{max(0.7, duration-0.2):.3f},ease:"power1.out"}},{start});
           chars{i}.forEach((ch,j)=>{{
-            tl.fromTo(ch,{{y:24,rotation:-2}},{{y:0,rotation:0,duration:0.45,ease:"back.out(1.5)"}},{start+0.08}+j*0.09);
+            tl.fromTo(ch,{{y:24,rotation:{body_tilt-2}}},{{y:0,rotation:{body_tilt},duration:0.45,ease:"back.out(1.5)"}},{start+0.08}+j*0.09);
             tl.to(ch,{{y:-10,duration:0.65,yoyo:true,repeat:Math.max(0,Math.floor(({duration}-1.0)/1.3)) ,ease:"sine.inOut"}},{start+0.65});
+            tl.fromTo(ch.querySelector(".arm-left"),{{rotation:0}},{{rotation:{arm_left},duration:0.42,ease:"power2.out"}},{start+0.2}+j*0.09);
+            tl.fromTo(ch.querySelector(".arm-right"),{{rotation:0}},{{rotation:{arm_right},duration:0.42,ease:"power2.out"}},{start+0.2}+j*0.09);
+            tl.to(ch.querySelector(".legs"),{{rotation:{leg_rotation},duration:0.35,yoyo:true,repeat:1,ease:"sine.inOut"}},{start+0.3}+j*0.09);
           }});
           tl.to(scene{i}.querySelector(".sun-rays"),{{rotation:5,duration:{duration:.3f},ease:"none"}},{start});
           tl.fromTo(scene{i}.querySelector(".top-card"),{{y:-65,opacity:0,rotation:-2}},{{y:0,opacity:1,rotation:0,duration:0.45,ease:"back.out(1.7)"}},{start+0.12});
