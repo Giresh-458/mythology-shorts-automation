@@ -1,52 +1,58 @@
 # Mythology Shorts Automation
 
-Cloud-first project for original English-language Indian mythology Shorts.
+Cloud-first prototype for original English-language Indian mythology Shorts.
 
-## Current status
+## Current implementation
 
-**Stage 1 (story drafts) is scaffolded.** This is not yet a complete video factory: visuals, voice generation, animation/rendering, quality checks, and publishing still need to be implemented and tested.
+The repository currently contains:
+- Gemini-based story and scene-plan generation.
+- Structured scene validation.
+- A Python-generated, vertical 2D vector cut-out composition for HyperFrames.
+- Local Kokoro text-to-speech through the HyperFrames CLI.
+- A scheduled GitHub Actions workflow that renders a draft MP4 and uploads it as an artifact.
 
-## Design goals
+The composition is a **procedural vector-animation prototype**, not yet a finished equivalent of the Instagram reference. It uses reusable geometric character parts, scene-specific vector backgrounds, simple expressions, props, camera moves and timeline animation. It does not yet provide a professionally hand-authored rig library, true word-level subtitle timing, a curated music/SFX mix, or visual QA against reference frames.
 
-- One original English mythology Short per day (initial target: 30–60 seconds)
-- Daily scheduled execution using GitHub Actions
-- No local rendering on the creator's computer
-- No paid APIs; workflows must stop rather than incur charges
-- Original scripts, meaningful creative variation, and careful treatment of source traditions
-- Never publish automatically until the complete pipeline passes quality checks
+## Visual reference direction
 
-## Stage 1: Generate a story draft
+The target is the provided Reel's flat geometric 2D cut-out style:
+- Warm golden/cream palette and radial sunburst staging.
+- Rounded character silhouettes, large expressive eyes and simple mouth shapes.
+- Separate character limbs and props animated with eased joint/transform motion.
+- Palace/courtyard staging, foreground props and concise top/bottom text.
+- Warm, clear, measured mythological narration.
 
-1. Create a Gemini API key in Google AI Studio.
-2. In this repository, open **Settings → Secrets and variables → Actions → New repository secret**.
-3. Name it `GEMINI_API_KEY` and paste the key as its value.
-4. Open **Actions → Daily story draft → Run workflow** to test manually.
-5. The scheduled workflow runs daily at 13:30 UTC (19:00 India Standard Time).
-6. Download the generated JSON story from the workflow run's Artifacts section.
+The English narrator is currently Kokoro am_michael at a slower pace. This is a free local male English voice, **not the same speaker or accent as the Telugu narrator in the reference**. The current Kokoro voice inventory does not provide a Telugu-accented English voice.
 
-If the key is missing or the API quota is exhausted, the workflow stops. There is no paid fallback.
+## Daily workflow
 
-## Required GitHub secret
+The scheduled workflow runs at 13:30 UTC (19:00 India Standard Time). It:
+1. Generates and validates a story using GEMINI_API_KEY.
+2. Creates English narration locally using HyperFrames' bundled Kokoro TTS.
+3. Builds the HyperFrames composition.
+4. Lints and renders a 1080 × 1920 MP4.
+5. Checks duration, dimensions and audio stream.
+6. Uploads the MP4 and source files as a GitHub Actions artifact.
 
-- `GEMINI_API_KEY`: store only as a GitHub Actions secret. Never put it in source code, commits, screenshots, or chat.
-- `GROQ_API_KEY`: optional backup provider key, stored only as a GitHub Actions secret. If Gemini exhausts its retry policy, the script tries Groq. The backup only works if your Groq account has access to the configured model (`openai/gpt-oss-120b`) and available quota.
+To test manually, open **Actions → Daily mythology video draft → Run workflow**.
 
-To enable Groq fallback, create a key at https://console.groq.com/keys and add a repository secret named `GROQ_API_KEY` under **Settings → Secrets and variables → Actions**. Do not paste the key into chat or commit it. The workflow never switches to a paid provider automatically; check your Groq plan and limits before use.
+## Required secret
 
-The Gemini API free tier has model-specific rate limits and terms. A free quota is not unlimited and may change. Check the current Google AI Studio terms before using generated content commercially.
+- GEMINI_API_KEY: create a key in Google AI Studio and store it under **Settings → Secrets and variables → Actions**. Never commit or share the key.
 
-## Roadmap
+The workflow intentionally does not pass a Groq key or configure a paid fallback. If Gemini's free quota is exhausted, the run stops rather than switching providers or incurring charges. Gemini free-tier access and limits are model/account dependent and can change; verify the current AI Studio quota before relying on daily generation.
 
-- [x] Scheduled cloud workflow
-- [x] Structured English story and scene-plan generation
-- [x] Basic script validation
-- [ ] Original reusable SVG puppet characters and backgrounds
-- [ ] English text-to-speech with verified commercial-use terms
-- [ ] HyperFrames rendering on a GitHub-hosted runner
-- [ ] Audio, subtitle, and video quality checks
-- [ ] YouTube OAuth upload (private test first)
-- [ ] Optional Instagram/Facebook publishing if account/API eligibility permits
+## Free cloud execution
 
-## Important
+The repository is public and uses the standard ubuntu-latest GitHub-hosted runner. Standard runners are free for public repositories under GitHub's current Actions policy. The runner has CPU resources, not a dedicated GPU. Kokoro TTS and HyperFrames rendering run locally on the runner.
 
-The repository currently generates **story drafts only**, not finished videos. Do not enable automatic publishing until every stage is implemented and tested. Monetization is not guaranteed; use original scripts and visuals and comply with each platform's monetization policies.
+## Current limitations — do not treat as production-ready
+
+- Procedural SVG art cannot yet match every handcrafted detail in the reference.
+- Character rigs and expression/action vocabulary are still limited.
+- Scene selection is keyword-driven and needs stronger semantic mapping.
+- Narration voice is a male English Kokoro voice, not an exact voice clone.
+- Word-level subtitle synchronisation, licensed background music and scene-specific sound effects remain to be implemented.
+- Current CI tests validate generated composition structure; a real rendered MP4 still needs visual review.
+
+No automatic publishing is enabled. Monetisation is not guaranteed; use original scripts/assets and comply with platform policies.

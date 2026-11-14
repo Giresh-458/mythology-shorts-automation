@@ -1,0 +1,58 @@
+{
+  "title": "Hanuman's Great Leap",
+  "closing_question": "What gives Hanuman his strength?",
+  "narration": "Hanuman stood at the edge of the mountain. Then he leapt across the endless sea. At last, Lanka appeared before him.",
+  "scenes": [
+    {
+      "scene_number": 1,
+      "duration_seconds": 12,
+      "visual_description": "Hanuman stands on a mountain cliff overlooking the ocean.",
+      "characters": [
+        "Hanuman"
+      ],
+      "setting": "mountain cliff",
+      "action": "Hanuman prepares to leap",
+      "emotion": "determined",
+      "camera": "gentle_push",
+      "props": [
+        "mace"
+      ],
+      "narration_segment": "Hanuman stood at the edge of the mountain.",
+      "on_screen_text": "A mighty promise"
+    },
+    {
+      "scene_number": 2,
+      "duration_seconds": 12,
+      "visual_description": "Hanuman flies above the wide blue ocean.",
+      "characters": [
+        "Hanuman"
+      ],
+      "setting": "ocean",
+      "action": "Hanuman leaps and flies across the waves",
+      "emotion": "determined",
+      "camera": "pan_right",
+      "props": [
+        "ocean waves"
+      ],
+      "narration_segment": "Then he leapt across the endless sea.",
+      "on_screen_text": "The great leap"
+    },
+    {
+      "scene_number": 3,
+      "duration_seconds": 12,
+      "visual_description": "Hanuman sees the golden city of Lanka on the horizon.",
+      "characters": [
+        "Hanuman"
+      ],
+      "setting": "Lanka palace",
+      "action": "Hanuman looks toward the distant city",
+      "emotion": "reverent",
+      "camera": "wide",
+      "props": [
+        "golden palace"
+      ],
+      "narration_segment": "At last, Lanka appeared before him.",
+      "on_screen_text": "Lanka at last"
+    }
+  ]
+}
