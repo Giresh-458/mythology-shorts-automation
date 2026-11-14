@@ -62,13 +62,15 @@ class CompositionBuilderTests(unittest.TestCase):
             audio_path = root / "narration.wav"
             story_path.write_text(json.dumps(story), encoding="utf-8")
             audio_path.write_bytes(b"")
-            subprocess.run(
+            result = subprocess.run(
                 [sys.executable, str(BUILDER), str(story_path), str(audio_path)],
                 cwd=root,
-                check=True,
+                check=False,
                 capture_output=True,
                 text=True,
             )
+            if result.returncode:
+                self.fail(f"Composition builder failed. stdout:\\n{result.stdout}\\nstderr:\\n{result.stderr}")
             html = (root / "video" / "index.html").read_text(encoding="utf-8")
 
         self.assertIn('data-width="1080"', html)
