@@ -56,3 +56,11 @@ jobs:
           ffprobe -v error -select_streams v:0 -show_entries stream=width,height -of csv=s=x:p=0 output/ci-preview.mp4 | grep -qx '1080x1920'
           DURATION="$(ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 output/ci-preview.mp4)"
           python -c "import sys; d=float(sys.argv[1]); assert 30 <= d <= 60, f'Expected 30-60 seconds, got {d:.2f}'" "$DURATION"
+      - name: Upload rendered CI preview for visual inspection
+        if: always() && hashFiles('output/ci-preview.mp4') != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: mythology-short-ci-preview-${{ github.run_number }}
+          path: output/ci-preview.mp4
+          if-no-files-found: error
+          retention-days: 3
